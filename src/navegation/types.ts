@@ -3,6 +3,8 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Thirdonboarding: undefined;
   Home: undefined; // abre o conjunto de abas (MainTabs)
+  Map: undefined; // nova tela de mapa
+  Camera: undefined;
 };
 
 // Abas da navegação inferior

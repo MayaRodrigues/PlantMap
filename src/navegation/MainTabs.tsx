@@ -6,6 +6,8 @@ import {
   BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
 
+import { Ionicons } from '@expo/vector-icons';
+
 import HomeScreen from '../screens/HomeScreeen/HomeScreen';
 import MapScreen from '../screens/MapScreen/MapScreen';
 import CameraScreen from '../screens/CameraScreen/CameraScreen';
@@ -18,12 +20,12 @@ import { MainTabParamList } from './types';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // Ícone (emoji) e rótulo de cada aba, na ordem do mockup
-const TAB_META: Record<keyof MainTabParamList, { label: string; icon: string }> = {
-  Home: { label: 'Home', icon: '🏠' },
-  Map: { label: 'Mapa', icon: '🗺️' },
-  Camera: { label: 'Câmera', icon: '📷' },
-  History: { label: 'Histórico', icon: '🕑' },
-  Profile: { label: 'Perfil', icon: '👤' },
+const TAB_META: Record<keyof MainTabParamList, { label: string; Icon: React.ReactNode }> = {
+  Home: { label: 'Home', Icon: <Ionicons name="home" size={20} color={colors.textMutedLight} /> },
+  Map: { label: 'Mapa', Icon: <Ionicons name="map" size={20} color={colors.textMutedLight} /> },
+  Camera: { label: 'Câmera', Icon: <Ionicons name="camera" size={20} color={colors.textMutedLight} /> },
+  History: { label: 'Histórico', Icon: <Ionicons name="time" size={20} color={colors.textMutedLight} /> },
+  Profile: { label: 'Perfil', Icon: <Ionicons name="person" size={20} color={colors.textMutedLight} /> },
 };
 
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
@@ -48,7 +50,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
         return (
           <Pressable key={route.key} style={styles.tabItem} onPress={onPress} hitSlop={4}>
-            <Text style={styles.tabEmoji}>{meta.icon}</Text>
+            {meta.Icon}
             <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
               {meta.label}
             </Text>

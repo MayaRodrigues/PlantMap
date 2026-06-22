@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from '../screens/WelcomeScreen/WelcomeScreen';
 import OnboardingScreen from '../screens/OnboardingScreen/OnboardingScreen';
 import ThirdonboardingScreen from '../screens/ThirdonboardingScreen/ThirdonboardingScreen';
+import MapScreen from '../screens/MapScreen/MapScreen';
 import MainTabs from './MainTabs';
 
 import { RootStackParamList } from './types';
@@ -22,6 +23,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Thirdonboarding" component={ThirdonboardingScreen} />
         <Stack.Screen name="Home" component={MainTabs} />
+        <Stack.Screen name="Map" component={MapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
