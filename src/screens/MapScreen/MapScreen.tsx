@@ -13,7 +13,11 @@ import MapView, { Marker, Region } from 'react-native-maps';
 import * as ImagePicker from 'expo-image-picker';
 
 import { styles } from './MapScreen.styles';
-import { getCurrentUserLocation } from '../../services/locationService';
+import {
+  getCurrentUserLocation,
+  geocodeAddress,
+  reverseGeocode,
+} from '../../services/locationService';
 import { getAllPlants, PlantRecord } from '../../services/plantService';
 import { usePlants } from '../../context/PlantContext';
 import { Entypo } from '@expo/vector-icons';
@@ -33,14 +37,17 @@ export default function MapScreen() {
   // ponto escolhido para registrar (abre o formulário quando != null)
   const [formCoord, setFormCoord] = useState<Coord | null>(null);
   const [formName, setFormName] = useState('');
-  const [formLocationName, setFormLocationName] = useState('');
   const [formDisease, setFormDisease] = useState('');
   const [formImageUri, setFormImageUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // endereço/local do ponto (obrigatório). vem do GPS (auto) ou de uma busca
+  const [formAddress, setFormAddress] = useState('');
+  const [geocoding, setGeocoding] = useState(false);
+
   const [initialRegion, setInitialRegion] = useState<Region>({
-    latitude: -25.4294,
-    longitude: -54.5824,
+    latitude: -24.8601,
+    longitude: -54.3302,
     latitudeDelta: 0.08,
     longitudeDelta: 0.08,
   });
@@ -80,10 +87,49 @@ export default function MapScreen() {
   // abre o formulário num ponto escolhido (toque longo ou GPS)
   function openFormAt(coord: Coord) {
     setFormName('');
-    setFormLocationName('');
     setFormDisease('');
     setFormImageUri(null);
+    setFormAddress('');
     setFormCoord(coord);
+  }
+
+  // busca as coordenadas de um endereço digitado e move o ponto/mapa pra lá.
+  // usado quando a planta não está na localização atual do celular.
+  async function handleSearchAddress() {
+    const address = formAddress.trim();
+    if (!address) {
+      Alert.alert('Informe o endereço', 'Digite um endereço para buscar no mapa.');
+      return;
+    }
+
+    try {
+      setGeocoding(true);
+      const coords = await geocodeAddress(address);
+
+      if (!coords) {
+        Alert.alert(
+          'Endereço não encontrado',
+          'Não foi possível localizar esse endereço. Tente ser mais específico (rua, cidade, estado).'
+        );
+        return;
+      }
+
+      setFormCoord(coords);
+      mapRef.current?.animateToRegion(
+        {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        1000
+      );
+    } catch (error) {
+      console.log('Erro ao buscar endereço:', error);
+      Alert.alert('Erro', 'Não foi possível buscar o endereço.');
+    } finally {
+      setGeocoding(false);
+    }
   }
 
   // escolhe uma foto da galeria (a planta pode ter sido fotografada em outro
@@ -99,7 +145,7 @@ export default function MapScreen() {
     }
   }
 
-  // botão "Registrar aqui": usa a localização atual
+  // botão "Registrar aqui": usa a localização atual e já preenche o endereço
   async function handleRegisterHere() {
     const coords = await getCurrentUserLocation();
     if (!coords) {
@@ -109,7 +155,18 @@ export default function MapScreen() {
       );
       return;
     }
+
     openFormAt(coords);
+
+    // tenta descobrir o endereço da localização atual pra preencher o "Local"
+    try {
+      const address = await reverseGeocode(coords);
+      if (address) {
+        setFormAddress(address);
+      }
+    } catch (error) {
+      console.log('Erro ao obter endereço da localização atual:', error);
+    }
   }
 
   async function handleSavePoint() {
@@ -117,6 +174,19 @@ export default function MapScreen() {
 
     if (!formName.trim()) {
       Alert.alert('Informe o nome', 'Digite o nome da planta para registrar o ponto.');
+      return;
+    }
+
+    if (!formAddress.trim()) {
+      Alert.alert(
+        'Informe o local',
+        'Busque um endereço ou use "Registrar aqui" para definir a localização.'
+      );
+      return;
+    }
+
+    if (!formImageUri) {
+      Alert.alert('Adicione uma foto', 'É necessário adicionar uma foto da planta para postar.');
       return;
     }
 
@@ -129,7 +199,7 @@ export default function MapScreen() {
         id: Date.now().toString(),
         user: 'Você',
         avatar: '🌱',
-        location: formLocationName.trim() || 'Ponto no mapa',
+        location: formAddress.trim(),
         plantName: formName.trim(),
         disease: disease ? disease : null,
         isHealthy: disease ? false : true,
@@ -260,6 +330,32 @@ export default function MapScreen() {
                 : ''}
             </Text>
 
+            {/* o local é obrigatório: vem da localização atual ("Registrar
+                aqui") ou de um endereço buscado aqui */}
+            <Text style={styles.label}>Local *</Text>
+            <View style={styles.addressRow}>
+              <TextInput
+                style={styles.addressInput}
+                value={formAddress}
+                onChangeText={setFormAddress}
+                placeholder="Ex: Av. Brasil, 100, Foz do Iguaçu"
+                placeholderTextColor="#9CA3AF"
+                onSubmitEditing={handleSearchAddress}
+                returnKeyType="search"
+              />
+              <Pressable
+                style={styles.addressButton}
+                onPress={handleSearchAddress}
+                disabled={geocoding}
+              >
+                {geocoding ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="search" size={18} color="#fff" />
+                )}
+              </Pressable>
+            </View>
+
             {formImageUri ? (
               <>
                 <Image
@@ -274,7 +370,7 @@ export default function MapScreen() {
               <Pressable style={styles.photoButton} onPress={pickImage}>
                 <Ionicons name="image-outline" size={20} color="#374151" />
                 <Text style={styles.photoButtonText}>
-                  Adicionar foto da galeria
+                  Adicionar foto da galeria *
                 </Text>
               </Pressable>
             )}
@@ -285,15 +381,6 @@ export default function MapScreen() {
               value={formName}
               onChangeText={setFormName}
               placeholder="Ex: Ipê Amarelo"
-              placeholderTextColor="#9CA3AF"
-            />
-
-            <Text style={styles.label}>Local (opcional)</Text>
-            <TextInput
-              style={styles.input}
-              value={formLocationName}
-              onChangeText={setFormLocationName}
-              placeholder="Ex: Parque Ambiental"
               placeholderTextColor="#9CA3AF"
             />
 

@@ -2,8 +2,29 @@ import * as SQLite from 'expo-sqlite';
 
 export const db = SQLite.openDatabaseSync('plantmap.db');
 
+const SCHEMA_VERSION = 1;
+
 export async function initDatabase() {
+  // descobre qual versão do schema está gravada neste banco (0 = banco novo)
+  const row = await db.getFirstAsync<{ user_version: number }>(
+    'PRAGMA user_version;'
+  );
+  const currentVersion = row?.user_version ?? 0;
+
+  if (currentVersion < SCHEMA_VERSION) {
+    await db.execAsync(`
+      PRAGMA foreign_keys = OFF;
+      DROP TABLE IF EXISTS comments;
+      DROP TABLE IF EXISTS likes;
+      DROP TABLE IF EXISTS statistics;
+      DROP TABLE IF EXISTS locations;
+      DROP TABLE IF EXISTS plants;
+      DROP TABLE IF EXISTS users;
+    `);
+  }
+
   await db.execAsync(`
+    PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
 
     CREATE TABLE IF NOT EXISTS users (
@@ -84,11 +105,11 @@ export async function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_comments_plant_id ON comments(plant_id);
   `);
 
-  // Usuário local padrão (id = 1). A tabela "plants" exige user_id por
-  // causa da foreign key, então garantimos que esse usuário sempre exista.
   await db.runAsync(
     `INSERT OR IGNORE INTO users (id, name, username, created_at)
      VALUES (1, 'Você', '@voce', ?);`,
     [new Date().toISOString()]
   );
+
+  await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
 }

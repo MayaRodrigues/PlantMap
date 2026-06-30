@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const PLANT_ID_BASE_URL = '	https://plant.id/api/v3' ;
+const PLANT_ID_BASE_URL = 'https://plant.id/api/v3';
 const PLANT_ID_API_KEY = 'cmVpzqkMdhKbpwqtzEHOdS0Y01hB3o9vw8CZP7xbx2s1uotaDP'; 
 
 export type PlantDiseaseResult = {

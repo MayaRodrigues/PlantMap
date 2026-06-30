@@ -8,6 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../../style/colors';
 import { styles } from './ThirdonboardingScreen.styles';
 import { RootStackParamList } from '../../navegation/types';
+import { setOnboardingComplete } from '../../services/storageService';
 
 const logoSource = require('../../../assets/logo.png');
 const iconSource = require('../../../assets/icon/mapa.png');
@@ -17,6 +18,13 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, 'Thirdonboarding'>;
 
 export default function ThirdonboardingScreen() {
   const navigation = useNavigation<NavProp>();
+
+  // Marca o onboarding como concluído (AsyncStorage) e vai para a Home. Na
+  // próxima abertura do app, o boot lê essa flag e abre direto na Home.
+  async function finishOnboarding() {
+    await setOnboardingComplete();
+    navigation.navigate('Home');
+  }
 
   return (
     <LinearGradient
@@ -70,7 +78,7 @@ export default function ThirdonboardingScreen() {
 
               <Pressable
                 style={styles.primaryButton}
-                onPress={() => navigation.navigate('Home')}
+                onPress={finishOnboarding}
               >
                 <Text style={styles.primaryButtonText}>Próximo</Text>
                 <Text style={styles.primaryButtonText}>›</Text>
@@ -80,7 +88,7 @@ export default function ThirdonboardingScreen() {
 
           <Pressable
             style={styles.skipWrap}
-            onPress={() => navigation.navigate('Home')}
+            onPress={finishOnboarding}
             hitSlop={12}
           >
             <Text style={styles.skipText}>Pular</Text>

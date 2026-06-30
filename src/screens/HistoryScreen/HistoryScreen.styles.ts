@@ -108,4 +108,84 @@ statLabel: {
     lineHeight: 16,
 },
 
+// ---- Header block (ListHeaderComponent) ----
+headerBlock: {
+    gap: 16,
+    marginBottom: 16,
+},
+listTitle: {
+    color: colors.textDark,
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 4,
+},
+
+// ---- History list item ----
+historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.cardBg,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    marginBottom: 12,
+},
+historyThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: colors.chipBgLight,
+},
+historyThumbPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+},
+historyInfo: {
+    flex: 1,
+    gap: 2,
+},
+historyName: {
+    color: colors.textDark,
+    fontSize: 15,
+    fontWeight: '700',
+},
+historyScientific: {
+    color: colors.textMutedLight,
+    fontSize: 12,
+    fontStyle: 'italic',
+},
+historyMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+},
+historyLocation: {
+    flex: 1,
+    color: colors.textGray,
+    fontSize: 12,
+},
+
+// ---- Empty state ----
+emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 40,
+},
+emptyText: {
+    color: colors.textGray,
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+},
+emptyHint: {
+    color: colors.textMutedLight,
+    fontSize: 13,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+},
+
 });

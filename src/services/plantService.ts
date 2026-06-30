@@ -1,5 +1,6 @@
 import { db } from '../database/squilite';
 import { FeedPost } from '../components/PlantCard';
+import { persistPlantImage } from './imageStorage';
 
 // Por enquanto o app trabalha com um único usuário local (id = 1),
 // semeado em initDatabase(). Quando houver login, troque pelo id real.
@@ -17,10 +18,20 @@ export type PlantRecord = {
   createdAt: string;
 };
 
+// Resultado da gravação: id gerado pelo banco e o caminho permanente da foto
+// (pode ser diferente do enviado, pois a imagem é copiada para a pasta do app).
+export type InsertedPlant = {
+  id: number;
+  imageUri: string;
+};
+
 // Grava uma planta (e, se houver coordenadas, a localização dela).
-// Retorna o id gerado pelo banco.
-export async function insertPlant(post: FeedPost): Promise<number> {
+export async function insertPlant(post: FeedPost): Promise<InsertedPlant> {
   const createdAt = new Date().toISOString();
+
+  // Copia a foto do cache temporário para a pasta permanente ANTES de gravar,
+  // garantindo que o image_uri salvo continue válido depois de fechar o app.
+  const imageUri = persistPlantImage(post.imageUri);
 
   const result = await db.runAsync(
     `INSERT INTO plants
@@ -30,7 +41,7 @@ export async function insertPlant(post: FeedPost): Promise<number> {
       DEFAULT_USER_ID,
       post.plantName,
       post.scientificName ?? null,
-      post.imageUri ?? '',
+      imageUri,
       post.confidence ?? null,
       post.disease ?? null,
       post.location, // guardamos o nome do local em "notes"
@@ -57,7 +68,7 @@ export async function insertPlant(post: FeedPost): Promise<number> {
     );
   }
 
-  return plantId;
+  return { id: plantId, imageUri };
 }
 
 // Plantas com coordenadas, para os pinos do mapa.

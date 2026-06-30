@@ -135,6 +135,30 @@ export const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 14,
   },
+  // ---- Busca por endereço ----
+  addressRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  addressInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#111827',
+  },
+  addressButton: {
+    width: 48,
+    borderRadius: 12,
+    backgroundColor: '#2E7D32',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   formButtons: {
     flexDirection: 'row',
     gap: 12,

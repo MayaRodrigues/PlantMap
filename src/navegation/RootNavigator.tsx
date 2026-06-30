@@ -12,11 +12,17 @@ import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function RootNavigator() {
+type RootNavigatorProps = {
+  // Tela inicial: 'Home' se o onboarding já foi concluído (lido do AsyncStorage),
+  // ou 'Welcome' na primeira vez que o app é aberto.
+  initialRoute: keyof RootStackParamList;
+};
+
+export default function RootNavigator({ initialRoute }: RootNavigatorProps) {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Welcome"
+        initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
